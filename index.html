@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$PLAGUE — The Infection Is Spreading</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --plague-green: #39ff14;
+            --plague-dark: #0a0f0a;
+            --plague-mid: #111a11;
+            --plague-glow: rgba(57, 255, 20, 0.15);
+            --plague-glow-strong: rgba(57, 255, 20, 0.4);
+            --plague-red: #ff3131;
+            --plague-yellow: #c8ff00;
+            --text-dim: #4a6a4a;
+            --text-mid: #7aaa7a;
+            --text-bright: #d0ffd0;
+        }
+
+        body {
+            background: var(--plague-dark);
+            color: var(--text-bright);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* === ANIMATED BACKGROUND === */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(57,255,20,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57,255,20,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--plague-green);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float linear infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Scanline */
+        .scanline {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.08) 2px,
+                rgba(0,0,0,0.08) 4px
+            );
+        }
+
+        /* === CONTENT === */
+        .content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* === NAV === */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(57,255,20,0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,15,10,0.85);
+        }
+        .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--plague-green);
+            text-shadow: 0 0 20px var(--plague-glow-strong);
+            letter-spacing: 3px;
+        }
+        .nav-logo span { color: var(--text-dim); font-weight: 400; }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--text-mid);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .nav-links a:hover {
+            color: var(--plague-green);
+            text-shadow: 0 0 10px var(--plague-glow);
+        }
+
+        /* === HERO === */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .biohazard {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px var(--plague-glow-strong));
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .hero h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            color: var(--plague-green);
+            text-shadow: 0 0 40px var(--plague-glow-strong), 0 0 80px var(--plague-glow);
+            letter-spacing: 8px;
+            margin-bottom: 16px;
+        }
+
+        .hero-tagline {
+            font-size: 1.3rem;
+            color: var(--text-mid);
+            margin-bottom: 40px;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+        .hero-tagline em {
+            color: var(--plague-green);
+            font-style: normal;
+            text-shadow: 0 0 10px var(--plague-glow);
+        }
+
+        /* Live infection counter */
+        .infection-counter {
+            background: rgba(57,255,20,0.05);
+            border: 1px solid rgba(57,255,20,0.2);
+            padding: 20px 40px;
+            margin-bottom: 40px;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+        }
+        .infection-counter::before,
+        .infection-counter::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: var(--plague-green);
+            border-style: solid;
+        }
+        .infection-counter::before {
+            top: -1px; left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+        .infection-counter::after {
+            bottom: -1px; right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+        .infection-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .infection-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--plague-green);
+            text-shadow: 0 0 20px var(--plague-glow-strong);
+        }
+        .infection-sub {
+            font-size: 0.75rem;
+            color: var(--plague-red);
+            margin-top: 6px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 14px 32px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: var(--plague-green);
+            color: var(--plague-dark);
+            box-shadow: 0 0 20px var(--plague-glow-strong), inset 0 0 20px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 40px var(--plague-glow-strong), 0 0 80px var(--plague-glow);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--plague-green);
+            border: 1px solid rgba(57,255,20,0.3);
+        }
+        .btn-outline:hover {
+            border-color: var(--plague-green);
+            box-shadow: 0 0 20px var(--plague-glow);
+            transform: translateY(-2px);
+        }
+
+        /* === HOW IT WORKS === */
+        .section {
+            padding: 100px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--plague-green);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+        .section h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 60px;
+        }
+        .section h2 span {
+            color: var(--plague-green);
+            text-shadow: 0 0 20px var(--plague-glow);
+        }
+
+        /* Flywheel */
+        .flywheel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2px;
+            margin-bottom: 60px;
+        }
+        .fly-step {
+            background: rgba(57,255,20,0.03);
+            border: 1px solid rgba(57,255,20,0.08);
+            padding: 30px 24px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .fly-step:hover {
+            background: rgba(57,255,20,0.06);
+            border-color: rgba(57,255,20,0.2);
+        }
+        .fly-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        .fly-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .fly-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--plague-green);
+            margin-bottom: 8px;
+        }
+        .fly-desc {
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            line-height: 1.5;
+        }
+        .fly-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--plague-green);
+            font-size: 1.5rem;
+            opacity: 0.3;
+        }
+
+        /* === TOKENOMICS === */
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .token-card {
+            background: rgba(57,255,20,0.03);
+            border: 1px solid rgba(57,255,20,0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        .token-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--plague-green), transparent);
+        }
+        .token-pct {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--plague-green);
+            text-shadow: 0 0 20px var(--plague-glow);
+            margin-bottom: 8px;
+        }
+        .token-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .token-desc {
+            font-size: 0.8rem;
+            color: var(--text-mid);
+            line-height: 1.5;
+        }
+
+        /* Fee bar */
+        .fee-bar {
+            background: rgba(57,255,20,0.05);
+            border: 1px solid rgba(57,255,20,0.1);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 20px;
+        }
+        .fee-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .fee-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--plague-green);
+        }
+        .fee-track {
+            flex: 1;
+            height: 4px;
+            background: rgba(57,255,20,0.1);
+            margin: 0 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .fee-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--plague-green);
+            box-shadow: 0 0 10px var(--plague-glow-strong);
+            animation: fillBar 3s ease-out forwards;
+        }
+        @keyframes fillBar { to { width: 100%; } }
+
+        /* === INFECTION MAP === */
+        .map-section {
+            padding: 80px 40px;
+            text-align: center;
+        }
+        .map-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(57,255,20,0.02);
+            border: 1px solid rgba(57,255,20,0.1);
+            padding: 40px;
+            position: relative;
+        }
+        .map-container::before,
+        .map-container::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: var(--plague-green);
+            border-style: solid;
+        }
+        .map-container::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .map-container::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+        .map-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .map-stat {
+            text-align: center;
+        }
+        .map-stat-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--plague-green);
+            text-shadow: 0 0 15px var(--plague-glow);
+        }
+        .map-stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Infection log */
+        .infection-log {
+            max-width: 900px;
+            margin: 30px auto 0;
+            text-align: left;
+        }
+        .log-entry {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            padding: 8px 16px;
+            border-left: 2px solid rgba(57,255,20,0.2);
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .log-entry:hover {
+            border-left-color: var(--plague-green);
+            background: rgba(57,255,20,0.03);
+            color: var(--text-mid);
+        }
+        .log-entry .addr { color: var(--plague-green); opacity: 0.7; }
+        .log-entry .amt { color: var(--plague-yellow); }
+        .log-entry .time { color: var(--text-dim); font-size: 0.65rem; }
+        .log-new {
+            border-left-color: var(--plague-green);
+            color: var(--text-mid);
+            animation: logFlash 2s ease-out;
+        }
+        @keyframes logFlash {
+            0% { background: rgba(57,255,20,0.15); }
+            100% { background: transparent; }
+        }
+
+        /* === CONTRACT === */
+        .contract-box {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(57,255,20,0.03);
+            border: 1px solid rgba(57,255,20,0.15);
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .contract-box:hover {
+            border-color: var(--plague-green);
+            box-shadow: 0 0 20px var(--plague-glow);
+        }
+        .contract-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .contract-addr {
+            font-size: 0.8rem;
+            color: var(--plague-green);
+            word-break: break-all;
+            opacity: 0.8;
+        }
+        .contract-copy {
+            background: rgba(57,255,20,0.1);
+            border: 1px solid rgba(57,255,20,0.2);
+            color: var(--plague-green);
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        .contract-copy:hover {
+            background: var(--plague-green);
+            color: var(--plague-dark);
+        }
+
+        /* === FOOTER === */
+        footer {
+            border-top: 1px solid rgba(57,255,20,0.08);
+            padding: 40px;
+            text-align: center;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover { color: var(--plague-green); }
+        .footer-disclaimer {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            nav { padding: 16px 20px; }
+            .nav-links { gap: 16px; }
+            .nav-links a { font-size: 0.7rem; }
+            .section { padding: 60px 20px; }
+            .map-stats { grid-template-columns: repeat(2, 1fr); }
+            .hero h1 { letter-spacing: 4px; }
+            .fee-bar { flex-direction: column; gap: 12px; text-align: center; }
+            .fee-track { width: 100%; margin: 0; }
+            .contract-box { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="particles" id="particles"></div>
+<div class="scanline"></div>
+
+<div class="content">
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">$PLAGUE <span>// v1.0</span></div>
+        <ul class="nav-links">
+            <li><a href="#how">Mechanism</a></li>
+            <li><a href="#tokenomics">Tokenomics</a></li>
+            <li><a href="#tracker">Tracker</a></li>
+            <li><a href="https://app.uniswap.org" target="_blank">Buy</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="biohazard">☣️</div>
+        <h1>$PLAGUE</h1>
+        <p class="hero-tagline">You don't find <em>$PLAGUE</em> — it finds <em>you</em></p>
+
+        <div class="infection-counter">
+            <div class="infection-label">Wallets Infected</div>
+            <div class="infection-number" id="walletCount">0</div>
+            <div class="infection-sub">▶ SPREADING NOW</div>
+        </div>
+
+        <div class="hero-buttons">
+            <a href="#" class="btn btn-primary">BUY $PLAGUE</a>
+            <a href="#how" class="btn btn-outline">HOW IT WORKS</a>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+        <div class="section-label">// Infection Protocol</div>
+        <h2>Every trade <span>spreads the plague</span></h2>
+
+        <div class="flywheel">
+            <div class="fly-step">
+                <div class="fly-num">STEP 01</div>
+                <div class="fly-icon">💀</div>
+                <div class="fly-title">You Buy</div>
+                <div class="fly-desc">5% fee is collected from every buy and sell transaction on the DEX</div>
+            </div>
+            <div class="fly-step">
+                <div class="fly-num">STEP 02</div>
+                <div class="fly-icon">🧬</div>
+                <div class="fly-title">Fee Mutates</div>
+                <div class="fly-desc">The fee splits into two functions — infection spread and new pair creation</div>
+            </div>
+            <div class="fly-step">
+                <div class="fly-num">STEP 03</div>
+                <div class="fly-icon">☣️</div>
+                <div class="fly-title">Plague Spreads</div>
+                <div class="fly-desc">Tokens are airdropped to active wallets across the chain. They didn't ask for it</div>
+            </div>
+            <div class="fly-step">
+                <div class="fly-num">STEP 04</div>
+                <div class="fly-icon">🔁</div>
+                <div class="fly-title">Cycle Repeats</div>
+                <div class="fly-desc">New infected wallets buy in → more fees → more infections. Unstoppable</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOKENOMICS -->
+    <section class="section" id="tokenomics">
+        <div class="section-label">// Strain Breakdown</div>
+        <h2>5% fee. <span>Zero escape.</span></h2>
+
+        <div class="fee-bar">
+            <div>
+                <div class="fee-label">Transaction Fee</div>
+            </div>
+            <div class="fee-track"><div class="fee-fill"></div></div>
+            <div class="fee-value">5%</div>
+        </div>
+
+        <div class="token-grid">
+            <div class="token-card">
+                <div class="token-pct">3%</div>
+                <div class="token-name">Infection Spread</div>
+                <div class="token-desc">Batch airdrops to active wallets. Every trade infects new hosts. The plague doesn't stop growing.</div>
+            </div>
+            <div class="token-card">
+                <div class="token-pct">1.5%</div>
+                <div class="token-name">New Pair Creation</div>
+                <div class="token-desc">Auto-creates new liquidity pairs. More entry points. More charts. More visibility. More infection vectors.</div>
+            </div>
+            <div class="token-card">
+                <div class="token-pct">0.5%</div>
+                <div class="token-name">Plague Treasury</div>
+                <div class="token-desc">Development, marketing, and gas reserves for mass infection events. Fully transparent on-chain.</div>
+            </div>
+        </div>
+
+        <div class="contract-box" onclick="copyCA()">
+            <div>
+                <div class="contract-label">Contract Address</div>
+                <div class="contract-addr" id="caText">0x000...PLAGUE</div>
+            </div>
+            <button class="contract-copy" id="copyBtn">COPY</button>
+        </div>
+    </section>
+
+    <!-- INFECTION TRACKER -->
+    <section class="map-section" id="tracker">
+        <div class="section-label">// Live Infection Feed</div>
+        <h2 style="font-family:'JetBrains Mono',monospace; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:700; color:var(--text-bright); margin-bottom:40px;">
+            The <span style="color:var(--plague-green); text-shadow:0 0 20px var(--plague-glow);">plague</span> is spreading
+        </h2>
+
+        <div class="map-container">
+            <div class="map-stats">
+                <div class="map-stat">
+                    <div class="map-stat-num" id="statInfected">12,847</div>
+                    <div class="map-stat-label">Wallets Infected</div>
+                </div>
+                <div class="map-stat">
+                    <div class="map-stat-num" id="statPairs">14</div>
+                    <div class="map-stat-label">Active Pairs</div>
+                </div>
+                <div class="map-stat">
+                    <div class="map-stat-num" id="statVolume">$2.1M</div>
+                    <div class="map-stat-label">24h Volume</div>
+                </div>
+                <div class="map-stat">
+                    <div class="map-stat-num" id="statRate">+847</div>
+                    <div class="map-stat-label">Infected / 24h</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="infection-log" id="infectionLog">
+            <div class="log-entry log-new">
+                <span>☣️ <span class="addr">0x7a2F...e91d</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">2s ago</span>
+            </div>
+            <div class="log-entry">
+                <span>☣️ <span class="addr">0x3bC1...a4f2</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">8s ago</span>
+            </div>
+            <div class="log-entry">
+                <span>☣️ <span class="addr">0x91eD...7c3a</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">14s ago</span>
+            </div>
+            <div class="log-entry">
+                <span>🧬 New pair created: <span class="addr">PLAGUE/USDT</span></span>
+                <span class="amt">LP added</span>
+                <span class="time">31s ago</span>
+            </div>
+            <div class="log-entry">
+                <span>☣️ <span class="addr">0xf4aB...2d8e</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">45s ago</span>
+            </div>
+            <div class="log-entry">
+                <span>☣️ <span class="addr">0xc82D...11bf</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">1m ago</span>
+            </div>
+            <div class="log-entry">
+                <span>☣️ <span class="addr">0x5e9A...d43c</span> infected</span>
+                <span class="amt">+4,200 $PLAGUE</span>
+                <span class="time">1m ago</span>
+            </div>
+            <div class="log-entry">
+                <span>🧬 New pair created: <span class="addr">PLAGUE/DAI</span></span>
+                <span class="amt">LP added</span>
+                <span class="time">2m ago</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-links">
+            <a href="#">Twitter</a>
+            <a href="#">Telegram</a>
+            <a href="#">Etherscan</a>
+            <a href="#">Uniswap</a>
+            <a href="#">DexScreener</a>
+        </div>
+        <p class="footer-disclaimer">
+            $PLAGUE is a meme token with no intrinsic value or expectation of financial return.
+            There is no formal team or roadmap. The token exists purely for entertainment purposes.
+        </p>
+    </footer>
+
+</div>
+
+<script>
+    // Particles
+    const particleContainer = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (8 + Math.random() * 12) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+        particleContainer.appendChild(p);
+    }
+
+    // Animated wallet counter
+    const walletTarget = 12847;
+    const walletEl = document.getElementById('walletCount');
+    let walletCurrent = 0;
+    const walletStep = Math.ceil(walletTarget / 120);
+    const walletInterval = setInterval(() => {
+        walletCurrent += walletStep;
+        if (walletCurrent >= walletTarget) {
+            walletCurrent = walletTarget;
+            clearInterval(walletInterval);
+            // After reaching target, slowly increment
+            setInterval(() => {
+                walletCurrent += Math.floor(Math.random() * 3) + 1;
+                walletEl.textContent = walletCurrent.toLocaleString();
+            }, 3000);
+        }
+        walletEl.textContent = walletCurrent.toLocaleString();
+    }, 25);
+
+    // Copy CA
+    function copyCA() {
+        const addr = '0x000...PLAGUE';
+        navigator.clipboard.writeText(addr).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = 'COPIED';
+            setTimeout(() => btn.textContent = 'COPY', 2000);
+        });
+    }
+
+    // Fake live infection log
+    const addrs = [
+        '0xa3F1...8b2c', '0x72eB...c91f', '0xd4C6...3a7e', '0x1bA9...f42d',
+        '0x8cD3...2e1a', '0xf7E2...b83c', '0x4aB1...d92f', '0x6eC8...a14b',
+        '0x9dF4...7c3e', '0x2bA7...e61d', '0xc1D9...4f2a', '0x5eB3...8a7c',
+        '0xe8A2...1d4f', '0x3cF6...9b2e', '0x7dE1...c83a', '0xb4C9...2f7d'
+    ];
+    const logContainer = document.getElementById('infectionLog');
+
+    setInterval(() => {
+        const addr = addrs[Math.floor(Math.random() * addrs.length)];
+        const isPair = Math.random() < 0.08;
+        const pairs = ['PLAGUE/WBTC', 'PLAGUE/LINK', 'PLAGUE/ARB', 'PLAGUE/PEPE', 'PLAGUE/MATIC'];
+
+        const entry = document.createElement('div');
+        entry.className = 'log-entry log-new';
+
+        if (isPair) {
+            const pair = pairs[Math.floor(Math.random() * pairs.length)];
+            entry.innerHTML = `
+                <span>🧬 New pair created: <span class="addr">${pair}</span></span>
+                <span class="amt">LP added</span>
+                <span class="time">just now</span>
+            `;
+        } else {
+            const amt = (Math.floor(Math.random() * 8000) + 1000).toLocaleString();
+            entry.innerHTML = `
+                <span>☣️ <span class="addr">${addr}</span> infected</span>
+                <span class="amt">+${amt} $PLAGUE</span>
+                <span class="time">just now</span>
+            `;
+        }
+
+        logContainer.insertBefore(entry, logContainer.firstChild);
+
+        // Update times on existing entries
+        const entries = logContainer.querySelectorAll('.log-entry');
+        entries.forEach((e, i) => {
+            if (i > 0) {
+                const timeEl = e.querySelector('.time');
+                const secs = i * 6;
+                if (secs < 60) timeEl.textContent = secs + 's ago';
+                else timeEl.textContent = Math.floor(secs/60) + 'm ago';
+            }
+            if (i > 12) e.remove();
+            if (i > 0) e.classList.remove('log-new');
+        });
+    }, 6000);
+</script>
+
+</body>
+</html>
