@@ -803,6 +803,13 @@
 </div>
 
 <script>
+    // ─── CONFIG ──────────────────────────────────────────────────
+    // Set your token address here once launched. Leave empty for placeholder mode.
+    const TOKEN_ADDRESS = '';
+    const EXPLORER_API = 'https://robinhoodchain.blockscout.com/api/v2';
+    const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens';
+    // ─────────────────────────────────────────────────────────────
+
     // Particles
     const particleContainer = document.getElementById('particles');
     for (let i = 0; i < 40; i++) {
@@ -815,28 +822,125 @@
         particleContainer.appendChild(p);
     }
 
-    // Animated wallet counter
-    const walletTarget = 12847;
+    // ─── LIVE DATA ───────────────────────────────────────────────
+
     const walletEl = document.getElementById('walletCount');
-    let walletCurrent = 0;
-    const walletStep = Math.ceil(walletTarget / 120);
-    const walletInterval = setInterval(() => {
-        walletCurrent += walletStep;
-        if (walletCurrent >= walletTarget) {
-            walletCurrent = walletTarget;
-            clearInterval(walletInterval);
-            // After reaching target, slowly increment
-            setInterval(() => {
-                walletCurrent += Math.floor(Math.random() * 3) + 1;
-                walletEl.textContent = walletCurrent.toLocaleString();
-            }, 3000);
+    const logContainer = document.getElementById('infectionLog');
+    let fullContractAddr = TOKEN_ADDRESS;
+
+    // Format large numbers
+    function fmtNum(n) {
+        if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+        return '$' + n.toFixed(0);
+    }
+
+    function shortAddr(addr) {
+        if (!addr || addr.length < 10) return addr;
+        return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+
+    function timeAgo(ts) {
+        const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+        if (diff < 60) return diff + 's ago';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+        return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    // Animated counter
+    function animateCounter(el, target) {
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 100));
+        const interval = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(interval); }
+            el.textContent = current.toLocaleString();
+        }, 20);
+    }
+
+    // Fetch from Blockscout — holder count + recent transfers
+    async function fetchBlockscoutData() {
+        if (!TOKEN_ADDRESS) return null;
+        try {
+            const [tokenRes, transfersRes] = await Promise.all([
+                fetch(`${EXPLORER_API}/tokens/${TOKEN_ADDRESS}`),
+                fetch(`${EXPLORER_API}/tokens/${TOKEN_ADDRESS}/transfers?type=ERC-20`),
+            ]);
+            const token = await tokenRes.json();
+            const transfers = await transfersRes.json();
+            return { token, transfers: transfers.items || [] };
+        } catch (e) {
+            console.warn('Blockscout fetch failed:', e);
+            return null;
         }
-        walletEl.textContent = walletCurrent.toLocaleString();
-    }, 25);
+    }
+
+    // Fetch from DEXScreener — price, volume, pairs, market cap
+    async function fetchDexData() {
+        if (!TOKEN_ADDRESS) return null;
+        try {
+            const res = await fetch(`${DEXSCREENER_API}/${TOKEN_ADDRESS}`);
+            const data = await res.json();
+            return data.pairs || [];
+        } catch (e) {
+            console.warn('DEXScreener fetch failed:', e);
+            return null;
+        }
+    }
+
+    // Update all stats with real data
+    async function updateLiveData() {
+        const [blockscout, dexPairs] = await Promise.all([
+            fetchBlockscoutData(),
+            fetchDexData(),
+        ]);
+
+        // Holder count (wallets infected)
+        if (blockscout?.token?.holders) {
+            const holders = parseInt(blockscout.token.holders) || 0;
+            animateCounter(walletEl, holders);
+            document.getElementById('statInfected').textContent = holders.toLocaleString();
+        }
+
+        // DEXScreener data
+        if (dexPairs && dexPairs.length > 0) {
+            // Total 24h volume across all pairs
+            const totalVolume = dexPairs.reduce((sum, p) => sum + (parseFloat(p.volume?.h24) || 0), 0);
+            document.getElementById('statVolume').textContent = fmtNum(totalVolume);
+
+            // Number of pairs
+            document.getElementById('statPairs').textContent = dexPairs.length.toString();
+
+            // 24h transactions as infection rate
+            const totalTxns = dexPairs.reduce((sum, p) => {
+                return sum + (p.txns?.h24?.buys || 0) + (p.txns?.h24?.sells || 0);
+            }, 0);
+            document.getElementById('statRate').textContent = '+' + totalTxns.toLocaleString();
+        }
+
+        // Real transfer log
+        if (blockscout?.transfers && blockscout.transfers.length > 0) {
+            logContainer.innerHTML = '';
+            blockscout.transfers.slice(0, 12).forEach((tx, i) => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry' + (i === 0 ? ' log-new' : '');
+                const to = shortAddr(tx.to?.hash || '');
+                const amount = parseFloat(tx.total?.value || 0) / Math.pow(10, parseInt(tx.total?.decimals || 18));
+                const time = timeAgo(tx.timestamp);
+                entry.innerHTML = `
+                    <span><span class="addr">${to}</span> infected</span>
+                    <span class="amt">+${Math.floor(amount).toLocaleString()} $PLAGUE</span>
+                    <span class="time">${time}</span>
+                `;
+                logContainer.appendChild(entry);
+            });
+        }
+    }
 
     // Copy CA
     function copyCA() {
-        const addr = '0x000...PLAGUE';
+        const addr = fullContractAddr || '0x000...PLAGUE';
         navigator.clipboard.writeText(addr).then(() => {
             const btn = document.getElementById('copyBtn');
             btn.textContent = 'COPIED';
@@ -844,54 +948,30 @@
         });
     }
 
-    // Fake live infection log
-    const addrs = [
-        '0xa3F1...8b2c', '0x72eB...c91f', '0xd4C6...3a7e', '0x1bA9...f42d',
-        '0x8cD3...2e1a', '0xf7E2...b83c', '0x4aB1...d92f', '0x6eC8...a14b',
-        '0x9dF4...7c3e', '0x2bA7...e61d', '0xc1D9...4f2a', '0x5eB3...8a7c',
-        '0xe8A2...1d4f', '0x3cF6...9b2e', '0x7dE1...c83a', '0xb4C9...2f7d'
-    ];
-    const logContainer = document.getElementById('infectionLog');
+    // ─── INIT ────────────────────────────────────────────────────
 
-    setInterval(() => {
-        const addr = addrs[Math.floor(Math.random() * addrs.length)];
-        const isPair = Math.random() < 0.08;
-        const pairs = ['PLAGUE/WBTC', 'PLAGUE/LINK', 'PLAGUE/ARB', 'PLAGUE/PEPE', 'PLAGUE/MATIC'];
+    if (TOKEN_ADDRESS) {
+        // Live mode — pull real data
+        document.getElementById('caText').textContent = TOKEN_ADDRESS;
+        fullContractAddr = TOKEN_ADDRESS;
+        updateLiveData();
+        // Refresh every 30 seconds
+        setInterval(updateLiveData, 30000);
+    } else {
+        // Placeholder mode — animated fake data until token launches
+        animateCounter(walletEl, 0);
+        document.getElementById('statInfected').textContent = '—';
+        document.getElementById('statPairs').textContent = '—';
+        document.getElementById('statVolume').textContent = '—';
+        document.getElementById('statRate').textContent = '—';
 
-        const entry = document.createElement('div');
-        entry.className = 'log-entry log-new';
-
-        if (isPair) {
-            const pair = pairs[Math.floor(Math.random() * pairs.length)];
-            entry.innerHTML = `
-                <span>🧬 New pair created: <span class="addr">${pair}</span></span>
-                <span class="amt">LP added</span>
-                <span class="time">just now</span>
-            `;
-        } else {
-            const amt = (Math.floor(Math.random() * 8000) + 1000).toLocaleString();
-            entry.innerHTML = `
-                <span><span class="addr">${addr}</span> infected</span>
-                <span class="amt">+${amt} $PLAGUE</span>
-                <span class="time">just now</span>
-            `;
-        }
-
-        logContainer.insertBefore(entry, logContainer.firstChild);
-
-        // Update times on existing entries
-        const entries = logContainer.querySelectorAll('.log-entry');
-        entries.forEach((e, i) => {
-            if (i > 0) {
-                const timeEl = e.querySelector('.time');
-                const secs = i * 6;
-                if (secs < 60) timeEl.textContent = secs + 's ago';
-                else timeEl.textContent = Math.floor(secs/60) + 'm ago';
-            }
-            if (i > 12) e.remove();
-            if (i > 0) e.classList.remove('log-new');
-        });
-    }, 6000);
+        // Simulated infection log
+        const fakeAddrs = [
+            '0xa3F1...8b2c', '0x72eB...c91f', '0xd4C6...3a7e', '0x1bA9...f42d',
+            '0x8cD3...2e1a', '0xf7E2...b83c', '0x4aB1...d92f', '0x6eC8...a14b',
+        ];
+        logContainer.innerHTML = '<div class="log-entry"><span style="color:var(--text-dim);">Awaiting first infection...</span><span></span><span class="time">pending</span></div>';
+    }
 </script>
 
 </body>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; }
+  body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; gap: 40px; }
+  .logo-wrap { width: 512px; height: 512px; }
+</style>
+</head>
+<body>
+
+<!-- OPTION A: Virus particle (spiky sphere) -->
+<div class="logo-wrap" id="optA">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="glowA" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39ff14" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="neonA">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="#050a05"/>
+  <circle cx="256" cy="256" r="250" fill="url(#glowA)"/>
+  
+  <g transform="translate(256,256)" filter="url(#neonA)">
+    <!-- Core sphere -->
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#39ff14" stroke-width="3" opacity="0.9"/>
+    <circle cx="0" cy="0" r="65" fill="none" stroke="#39ff14" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="0" cy="0" r="75" fill="#39ff14" opacity="0.06"/>
+    
+    <!-- Spikes (virus protein spikes) -->
+    <g stroke="#39ff14" stroke-width="3" fill="#39ff14" stroke-linecap="round">
+      <!-- 12 spikes radiating out -->
+      <line x1="0" y1="-85" x2="0" y2="-140"/><circle cx="0" cy="-148" r="10" opacity="0.8"/>
+      <line x1="73.6" y1="-42.5" x2="121" y2="-70"/><circle cx="128" cy="-74" r="10" opacity="0.8"/>
+      <line x1="73.6" y1="42.5" x2="121" y2="70"/><circle cx="128" cy="74" r="10" opacity="0.8"/>
+      <line x1="0" y1="85" x2="0" y2="140"/><circle cx="0" cy="148" r="10" opacity="0.8"/>
+      <line x1="-73.6" y1="42.5" x2="-121" y2="70"/><circle cx="-128" cy="74" r="10" opacity="0.8"/>
+      <line x1="-73.6" y1="-42.5" x2="-121" y2="-70"/><circle cx="-128" cy="-74" r="10" opacity="0.8"/>
+      
+      <!-- Diagonal spikes -->
+      <line x1="42.5" y1="-73.6" x2="70" y2="-121"/><circle cx="74" cy="-128" r="8" opacity="0.6"/>
+      <line x1="85" y1="0" x2="140" y2="0"/><circle cx="148" cy="0" r="8" opacity="0.6"/>
+      <line x1="42.5" y1="73.6" x2="70" y2="121"/><circle cx="74" cy="128" r="8" opacity="0.6"/>
+      <line x1="-42.5" y1="73.6" x2="-70" y2="121"/><circle cx="-74" cy="128" r="8" opacity="0.6"/>
+      <line x1="-85" y1="0" x2="-140" y2="0"/><circle cx="-148" cy="0" r="8" opacity="0.6"/>
+      <line x1="-42.5" y1="-73.6" x2="-70" y2="-121"/><circle cx="-74" cy="-128" r="8" opacity="0.6"/>
+    </g>
+    
+    <!-- Inner detail -->
+    <circle cx="-20" cy="-15" r="18" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.3"/>
+    <circle cx="25" cy="10" r="14" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.25"/>
+    <circle cx="-10" cy="25" r="10" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.2"/>
+  </g>
+</svg>
+</div>
+
+</body>
+</html>

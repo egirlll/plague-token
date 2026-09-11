@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; }
+  body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+  .logo-wrap { width: 512px; height: 512px; }
+</style>
+</head>
+<body>
+
+<!-- OPTION C: Toxic skull with drip -->
+<div class="logo-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="glowC" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39ff14" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="neonC">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="#050a05"/>
+  <circle cx="256" cy="256" r="250" fill="url(#glowC)"/>
+
+  <g transform="translate(256,245)" filter="url(#neonC)">
+    <!-- Skull outline -->
+    <path d="M-95,-70
+      Q-110,-30 -105,15
+      Q-100,55 -85,75
+      Q-70,95 -55,105
+      L-50,110
+      Q-45,115 -40,118
+      L-35,120 L-35,135
+      Q-30,145 0,148
+      Q30,145 35,135
+      L35,120 L40,118
+      Q45,115 50,110
+      L55,105
+      Q70,95 85,75
+      Q100,55 105,15
+      Q110,-30 95,-70
+      Q80,-120 0,-135
+      Q-80,-120 -95,-70Z"
+      fill="none" stroke="#39ff14" stroke-width="3" opacity="0.9"/>
+
+    <!-- Left eye socket -->
+    <ellipse cx="-35" cy="-25" rx="28" ry="32" fill="#39ff14" opacity="0.08"/>
+    <ellipse cx="-35" cy="-25" rx="28" ry="32" fill="none" stroke="#39ff14" stroke-width="2" opacity="0.8"/>
+    <circle cx="-35" cy="-22" r="10" fill="#39ff14" opacity="0.3"/>
+
+    <!-- Right eye socket -->
+    <ellipse cx="35" cy="-25" rx="28" ry="32" fill="#39ff14" opacity="0.08"/>
+    <ellipse cx="35" cy="-25" rx="28" ry="32" fill="none" stroke="#39ff14" stroke-width="2" opacity="0.8"/>
+    <circle cx="35" cy="-22" r="10" fill="#39ff14" opacity="0.3"/>
+
+    <!-- Nose -->
+    <path d="M-8,25 L0,15 L8,25 L4,35 Q0,38 -4,35 Z" fill="none" stroke="#39ff14" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- Teeth -->
+    <path d="M-35,85 L-35,105" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M-22,80 L-22,108" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M-10,78 L-10,110" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M0,77 L0,112" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M10,78 L10,110" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M22,80 L22,108" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    <path d="M35,85 L35,105" stroke="#39ff14" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Jaw line -->
+    <path d="M-50,85 Q0,78 50,85" fill="none" stroke="#39ff14" stroke-width="2" opacity="0.6"/>
+    
+    <!-- Toxic drips from skull -->
+    <path d="M-60,75 Q-62,95 -58,115 Q-56,130 -60,145 Q-62,155 -58,160" 
+      fill="none" stroke="#39ff14" stroke-width="2" opacity="0.4"/>
+    <circle cx="-58" cy="165" r="4" fill="#39ff14" opacity="0.3"/>
+    
+    <path d="M65,60 Q68,80 64,100 Q62,118 66,130" 
+      fill="none" stroke="#39ff14" stroke-width="2" opacity="0.35"/>
+    <circle cx="66" cy="135" r="3.5" fill="#39ff14" opacity="0.25"/>
+    
+    <path d="M-80,40 Q-84,55 -80,70 Q-78,82 -82,90" 
+      fill="none" stroke="#39ff14" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="-82" cy="95" r="3" fill="#39ff14" opacity="0.2"/>
+    
+    <!-- Crack lines on skull -->
+    <path d="M-15,-90 Q-20,-70 -10,-55 Q-5,-45 -12,-35" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.25"/>
+    <path d="M20,-85 Q25,-65 18,-50" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.2"/>
+  </g>
+</svg>
+</div>
+
+</body>
+</html>

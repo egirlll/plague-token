@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; }
+  body { background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+  .logo-wrap { width: 512px; height: 512px; position: relative; }
+</style>
+</head>
+<body>
+<div class="logo-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39ff14" stop-opacity="0.3"/>
+      <stop offset="70%" stop-color="#39ff14" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="neon">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="outerGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Black background -->
+  <rect width="512" height="512" fill="#000"/>
+
+  <!-- Subtle radial glow -->
+  <circle cx="256" cy="256" r="256" fill="url(#glow)"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#39ff14" stroke-width="3" opacity="0.15" filter="url(#outerGlow)"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.08"/>
+
+  <!-- Biohazard symbol -->
+  <g transform="translate(256,256)" filter="url(#neon)">
+    <!-- Three crescents -->
+    <!-- Top crescent -->
+    <g transform="rotate(0)">
+      <path d="M0,-45 
+        A70,70 0 0,1 39,-22.5
+        A40,40 0 0,0 0,-85
+        A40,40 0 0,0 -39,-22.5
+        A70,70 0 0,1 0,-45Z" 
+        fill="#39ff14" opacity="0.95"/>
+      <!-- Arm extending outward -->
+      <path d="M-12,-80 L-8,-130 A25,25 0 0,1 8,-130 L12,-80" 
+        fill="#39ff14" opacity="0.9"/>
+    </g>
+    
+    <!-- Bottom-right crescent -->
+    <g transform="rotate(120)">
+      <path d="M0,-45 
+        A70,70 0 0,1 39,-22.5
+        A40,40 0 0,0 0,-85
+        A40,40 0 0,0 -39,-22.5
+        A70,70 0 0,1 0,-45Z" 
+        fill="#39ff14" opacity="0.95"/>
+      <path d="M-12,-80 L-8,-130 A25,25 0 0,1 8,-130 L12,-80" 
+        fill="#39ff14" opacity="0.9"/>
+    </g>
+    
+    <!-- Bottom-left crescent -->
+    <g transform="rotate(240)">
+      <path d="M0,-45 
+        A70,70 0 0,1 39,-22.5
+        A40,40 0 0,0 0,-85
+        A40,40 0 0,0 -39,-22.5
+        A70,70 0 0,1 0,-45Z" 
+        fill="#39ff14" opacity="0.95"/>
+      <path d="M-12,-80 L-8,-130 A25,25 0 0,1 8,-130 L12,-80" 
+        fill="#39ff14" opacity="0.9"/>
+    </g>
+    
+    <!-- Center ring -->
+    <circle cx="0" cy="0" r="22" fill="#000"/>
+    <circle cx="0" cy="0" r="22" fill="none" stroke="#39ff14" stroke-width="3" opacity="0.9"/>
+    <circle cx="0" cy="0" r="12" fill="#39ff14" opacity="0.15"/>
+  </g>
+
+  <!-- $PLAGUE text -->
+  <text x="256" y="420" text-anchor="middle" 
+    font-family="'Courier New', monospace" font-weight="900" font-size="48" 
+    fill="#39ff14" letter-spacing="8" filter="url(#outerGlow)">$PLAGUE</text>
+
+  <!-- Subtle corner marks -->
+  <g stroke="#39ff14" stroke-width="1.5" opacity="0.2">
+    <path d="M30,30 L30,60 M30,30 L60,30"/>
+    <path d="M482,30 L482,60 M482,30 L452,30"/>
+    <path d="M30,482 L30,452 M30,482 L60,482"/>
+    <path d="M482,482 L482,452 M482,482 L452,482"/>
+  </g>
+</svg>
+</div>
+</body>
+</html>
